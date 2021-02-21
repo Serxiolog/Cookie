@@ -1,6 +1,5 @@
-def main():
-    print('My first git program')
-
-
-if __name__ == '__main__':
-    main()
+add = {}
+for i in range(12):
+    a = float(input())
+    add[i] = a
+print(add)
