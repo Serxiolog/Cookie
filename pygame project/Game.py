@@ -9,6 +9,7 @@ score = 0
 coeff = 1
 clock = pygame.time.Clock()
 tick = 1
+MYEVENTTYPE = pygame.USEREVENT + 1
 names = {0: 'Курсор', 1: 'Бабушка', 2: 'Ферма', 3: 'Шахта', 4: 'Фабрика', 5: 'Банк',
          6: 'Храм', 7: 'Башня мага', 8: 'Ракета', 9: 'Лаборатория', 10: 'Портал', 11: 'Машина времени'}
 price = {0: 15, 1: 100, 2: 1100, 3: 12000, 4: 130000, 5: 1400000,
@@ -139,7 +140,7 @@ def get_click(mouse_pos):
     if on_circle(cell):
         on_click()
 
-
+pygame.time.set_timer(MYEVENTTYPE, 1000)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -147,9 +148,12 @@ while running:
         if event.type == pygame.MOUSEBUTTONUP:
             get_click(event.pos)
             board.get_click(event.pos)
+        if event.type == MYEVENTTYPE:
+            score += cookie_per_second
     screen.fill(pygame.Color(77, 113, 152))
     board.render()
     cookie()
     scoring()
     pygame.display.flip()
+    clock.tick(60)
 pygame.quit()
