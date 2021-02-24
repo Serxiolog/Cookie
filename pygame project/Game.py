@@ -3,18 +3,20 @@ import pygame, sys, math
 pygame.init()
 size = width, height = 1000, 600
 screen = pygame.display.set_mode(size)
-running = True
+running = False
 cookie_per_second = 0
 score = 0
 coeff = 1
 clock = pygame.time.Clock()
 tick = 1
 MYEVENTTYPE = pygame.USEREVENT + 1
+pause = True
 names = {0: 'Курсор', 1: 'Бабушка', 2: 'Ферма', 3: 'Шахта', 4: 'Фабрика', 5: 'Банк',
          6: 'Храм', 7: 'Башня мага', 8: 'Ракета', 9: 'Лаборатория', 10: 'Портал', 11: 'Машина времени'}
 price = {0: 15, 1: 100, 2: 1100, 3: 12000, 4: 130000, 5: 1400000,
          6: 20000000, 7: 330000000, 8: 5100000000, 9: 75000000000,
          10: 100000000000, 11: 1400000000000}
+menu_buttons = {0: 'Играть', 1: 'Смена аккаунта', 2: 'Результаты', 3: 'Выход'}
 
 
 class Board:
@@ -98,9 +100,39 @@ class Board:
         else:
             self.on_click(None)
 
+    def menu_on_click(self, cell):
+        if cell:
+            print(cell)
+
+    def menu_get_click(self, mouse_pos):
+        cell = self.menu_get_cell(mouse_pos)
+        if cell is not None:
+            self.menu_on_click(cell)
+        else:
+            self.menu_on_click(None)
+
+    def menu_render(self):
+        for y in range(self.height):
+            for x in range(self.width):
+                pygame.draw.rect(screen, pygame.Color(255, 255, 255), (
+                    x * self.cell_size + self.left, y * (self.cell_size // 2) + self.top,
+                    self.cell_size, self.cell_size // 2), 1)
+                font = pygame.font.SysFont('Comic Sans MS', 30)
+                text_name = font.render(f'{menu_buttons[y]}', True, (100, 255, 100))
+                screen.blit(text_name, (430, y * (self.cell_size // 2) + 80))
+
+    def menu_get_cell(self, mouse_pos):
+        cell_x = (mouse_pos[0] - self.left) // self.cell_size
+        cell_y = (mouse_pos[1] - self.top) // (self.cell_size // 2)
+        if cell_x < 0 or cell_x >= self.width or cell_y < 0 or cell_y >= self.height:
+            return None
+        return cell_x, cell_y
+
 
 board = Board(1, 12)
 board.set_view(950, 0, 50)
+menu_board = Board(1, 4)
+menu_board.set_view(400, 50, 250)
 
 
 def cookie():
@@ -140,20 +172,39 @@ def get_click(mouse_pos):
     if on_circle(cell):
         on_click()
 
+
+
 pygame.time.set_timer(MYEVENTTYPE, 1000)
-while running:
+while pause:
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pause = False
+            if event.type == pygame.MOUSEBUTTONUP:
+                get_click(event.pos)
+                board.get_click(event.pos)
+            if event.type == MYEVENTTYPE:
+                score += cookie_per_second
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_g:
+                    running = False
+        screen.fill(pygame.Color(77, 113, 152))
+        board.render()
+        cookie()
+        scoring()
+        pygame.display.flip()
+        clock.tick(60)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+            pause = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_g:
+                running = True
         if event.type == pygame.MOUSEBUTTONUP:
-            get_click(event.pos)
-            board.get_click(event.pos)
-        if event.type == MYEVENTTYPE:
-            score += cookie_per_second
-    screen.fill(pygame.Color(77, 113, 152))
-    board.render()
-    cookie()
-    scoring()
+            menu_board.menu_get_click(event.pos)
+    screen.fill(pygame.Color('Black'))
+    menu_board.menu_render()
     pygame.display.flip()
-    clock.tick(60)
 pygame.quit()
