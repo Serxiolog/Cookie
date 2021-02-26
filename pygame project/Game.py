@@ -1,9 +1,9 @@
-import pygame, sys, math, os
+import pygame, sys, math, os, random
 
 pygame.init()
 size = width, height = 1000, 600
 screen = pygame.display.set_mode(size)
-running = True
+running = False
 cookie_per_second = 0
 score = 0
 coeff = 1
@@ -12,6 +12,9 @@ tick = 1
 COOKIE = pygame.USEREVENT + 1
 GAME = pygame.USEREVENT + 2
 LEAVE = pygame.USEREVENT + 3
+DROP = pygame.USEREVENT + 4
+dropped = []
+delld = []
 pause = True
 names = {0: 'Курсор', 1: 'Бабушка', 2: 'Ферма', 3: 'Шахта', 4: 'Фабрика', 5: 'Банк',
          6: 'Храм', 7: 'Башня мага', 8: 'Ракета', 9: 'Лаборатория', 10: 'Портал'}
@@ -147,7 +150,7 @@ menu_board.set_view(400, 50, 250)
 
 
 def cookie():
-    pygame.draw.circle(screen, pygame.Color(65, 25, 0), (200, 300), 100)
+    screen.blit(image_cookie, (95, 195))
 
 
 def get_cell(mouse_pos):
@@ -158,9 +161,11 @@ def get_cell(mouse_pos):
     return cell_x, cell_y
 
 
-def on_click():
+def on_click(): ####!11!!
     global score
     score += coeff
+    if len(dropped) < 5:
+        pygame.time.set_timer(DROP, 1, 1)
 
 
 def on_circle(cell):
@@ -193,18 +198,31 @@ def load_image(name):
         return image
 
 
+def drop_cookie():
+    x = random.randint(0, 950)
+    dropped.append([x, 0])
+
+
+def dropped_cookie(x, y):
+    screen.blit(image_mini_cookie, (x, y))
+    y += 10
+    if y >= 600:
+        return None
+    return y
+
+
 def print_image():
-    screen.blit(image_cursor, (750, 10))
+    screen.blit(image_cursor, (750, 0))
     screen.blit(image_grandma, (750, 60))
-    screen.blit(image_farm, (750, 110))
+    screen.blit(image_farm, (750, 100))
     screen.blit(image_mine, (750, 160))
     screen.blit(image_factory, (750, 210))
-    screen.blit(image_bank, (750, 260))
+    screen.blit(image_bank, (750, 270))
     screen.blit(image_temple, (750, 310))
     screen.blit(image_wizard, (750, 360))
-    screen.blit(image_shipment, (750, 410))
-    screen.blit(image_lab, (750, 460))
-    screen.blit(image_portal, (750, 510))
+    screen.blit(image_shipment, (750, 420))
+    screen.blit(image_lab, (750, 480))
+    screen.blit(image_portal, (750, 540))
 
 
 image_bank = load_image('bank.png')
@@ -219,6 +237,9 @@ image_shipment = load_image('shipment.png')
 image_temple = load_image('temple.png')
 image_wizard = load_image('wizard.png')
 image_background = load_image('background.png')
+image_cookie = load_image('cookie.png')
+image_mini_cookie = load_image('mini_cookie.png')
+
 pygame.time.set_timer(COOKIE, 1000)
 while pause:
     while running:
@@ -234,7 +255,23 @@ while pause:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_g:
                     running = False
+            if event.type == DROP:
+                drop_cookie()
         screen.blit(image_background, (0, 0))
+        for i in range(len(dropped)):
+            if i > 5:
+                break
+            y = dropped_cookie(dropped[i][0], dropped[i][1])
+            if y:
+                dropped[i] = [dropped[i][0], y]
+            else:
+                delld.append(i)
+        delld = sorted(delld, reverse=True)
+        for i in delld:
+            if len(dropped) > 0:
+                del dropped[0]
+            else:
+                delld = []
         print_image()
         board.render()
         cookie()
