@@ -16,6 +16,7 @@ DROP = pygame.USEREVENT + 4
 dropped = []
 delld = []
 pause = True
+result_flag = False
 names = {0: 'Курсор', 1: 'Бабушка', 2: 'Ферма', 3: 'Шахта', 4: 'Фабрика', 5: 'Банк',
          6: 'Храм', 7: 'Башня мага', 8: 'Ракета', 9: 'Лаборатория', 10: 'Портал'}
 price = {0: 15, 1: 100, 2: 1100, 3: 12000, 4: 130000, 5: 1400000,
@@ -135,10 +136,12 @@ class Board:
         return cell_x, cell_y
 
     def menu_checker(self, num):
+        global result_flag
         if num == 0:
             pygame.time.set_timer(GAME, 1)
         elif num == 1:
-            pass
+            result_flag = True
+            print(2)
         elif num == 2:
             pygame.time.set_timer(LEAVE, 1)
 
@@ -209,6 +212,10 @@ def dropped_cookie(x, y):
     if y >= 600:
         return None
     return y
+
+
+def results():
+    pass
 
 
 def print_image():
@@ -292,7 +299,13 @@ while pause:
             pygame.time.set_timer(GAME, 0)
         if event.type == LEAVE:
             pause = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                result_flag = False
     screen.fill(pygame.Color('Black'))
-    menu_board.menu_render()
+    if result_flag:
+        results()
+    else:
+        menu_board.menu_render()
     pygame.display.flip()
 pygame.quit()
