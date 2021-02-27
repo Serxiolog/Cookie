@@ -1,4 +1,4 @@
-import pygame, sys, math, os, random
+import pygame, math, os, random, sqlite3, datetime
 
 pygame.init()
 size = width, height = 1000, 600
@@ -141,11 +141,36 @@ class Board:
             pygame.time.set_timer(GAME, 1)
         elif num == 1:
             result_flag = True
-            print(2)
         elif num == 2:
             pygame.time.set_timer(LEAVE, 1)
 
 
+
+def results_render():
+    result = cur.execute("""SELECT * FROM Name""").fetchall()
+    font = pygame.font.SysFont('Harrington', 30)
+    text_name = font.render(f'Key of last games', True, (100, 255, 100))
+    screen.blit(text_name, (50, 20))
+    text_name = font.render(f'Cookies', True, (100, 255, 100))
+    screen.blit(text_name, (300, 20))
+    text_name = font.render(f'Cookies per second', True, (100, 255, 100))
+    screen.blit(text_name, (600, 20))
+    for i in range(len(result)):
+        if i >= 5:
+            break
+        a, c, d = result[-i]
+        text_name = font.render(f'{a}', True, (100, 255, 100))
+        screen.blit(text_name, (100, (i * 50) + 60))
+        text_name = font.render(f'{d}', True, (100, 255, 100))
+        screen.blit(text_name, (300, (i * 50) + 60))
+        text_name = font.render(f'{c}', True, (100, 255, 100))
+        screen.blit(text_name, (600, (i * 50) + 60))
+
+
+con = sqlite3.connect("Stats.db")
+cur = con.cursor()
+result = cur.execute("""SELECT * FROM Name""").fetchall()
+check = result[-1][0]
 board = Board(1, 11)
 board.set_view(950, 0, 55)
 menu_board = Board(1, 3)
@@ -164,7 +189,7 @@ def get_cell(mouse_pos):
     return cell_x, cell_y
 
 
-def on_click(): ####!11!!
+def on_click():
     global score
     score += coeff
     if len(dropped) < 5:
@@ -181,7 +206,7 @@ def on_circle(cell):
 
 
 def scoring():
-    font = pygame.font.Font(None, 50)
+    font = pygame.font.SysFont('Algerian', 50)
     text = font.render(f'Score:{score}', True, (100, 255, 100))
     screen.blit(text, (20, 20))
 
@@ -215,7 +240,7 @@ def dropped_cookie(x, y):
 
 
 def results():
-    pass
+    results_render()
 
 
 def print_image():
@@ -292,6 +317,7 @@ while pause:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_g:
                 running = True
+                result_flag = False
         if event.type == pygame.MOUSEBUTTONUP:
             menu_board.menu_get_click(event.pos)
         if event.type == GAME:
@@ -309,3 +335,7 @@ while pause:
         menu_board.menu_render()
     pygame.display.flip()
 pygame.quit()
+if score > 0:
+    cur.execute(f"""INSERT OR REPLACE INTO Name VALUES ({check + 1},{cookie_per_second},{score})""").fetchall()
+con.commit()
+con.close()
