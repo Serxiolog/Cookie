@@ -1,4 +1,5 @@
-import pygame, math, os, random, sqlite3, datetime
+import pygame, math, os, random, sqlite3
+
 
 pygame.init()
 size = width, height = 1000, 600
@@ -145,7 +146,6 @@ class Board:
             pygame.time.set_timer(LEAVE, 1)
 
 
-
 def results_render():
     result = cur.execute("""SELECT * FROM Name""").fetchall()
     font = pygame.font.SysFont('Harrington', 30)
@@ -156,7 +156,7 @@ def results_render():
     text_name = font.render(f'Cookies per second', True, (100, 255, 100))
     screen.blit(text_name, (600, 20))
     for i in range(len(result)):
-        if i >= 5:
+        if i >= 10:
             break
         a, c, d = result[-i]
         text_name = font.render(f'{a}', True, (100, 255, 100))
